@@ -1,1 +1,1 @@
-web: python wanbot.py -p $PORT
+worker: python wanbot.py
