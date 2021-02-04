@@ -1,1 +1,1 @@
-web: python wanbot.py
+worker: python wanbot.py
