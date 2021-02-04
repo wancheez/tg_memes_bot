@@ -51,8 +51,8 @@ class BotScheduler:
             schedule.every().wednesday.at("09:30").do(wednesday_task, wednesday_chat_id)
             #schedule.every(5).seconds.do(wednesday_task, bot, wednesday_chat_id)
         for memes_chat_id in tasks['memes']:
-            schedule.every().day.at("10:30").do(memes_task, bot, memes_chat_id)
-            #schedule.every(5).seconds.do(memes_task, bot, memes_chat_id)
+            #schedule.every().day.at("10:30").do(memes_task, bot, memes_chat_id)
+            schedule.every(5).seconds.do(memes_task, bot, memes_chat_id)
         print('Tasks scheduled')
         self.scheduler_runned = True
         while self.scheduler_runned:
