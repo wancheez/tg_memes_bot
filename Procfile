@@ -1,1 +1,1 @@
-worker: python wanbot.py
+worker: wanbot.py
