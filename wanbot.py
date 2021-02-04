@@ -2,8 +2,9 @@ from bot_scheduler import BotScheduler
 import threading
 import telebot
 from memer import Memer
+import os
 
-TOKEN = '201033715:AAEKKuLzJsBMnX3HZ2-63qlsb8IB-VUpW5g'
+TOKEN = os.environ['TG_TOKEN']
 bot = telebot.TeleBot(TOKEN)
 bot_scheduler = BotScheduler()
 
