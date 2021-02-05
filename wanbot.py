@@ -31,6 +31,11 @@ def schedule_memes(message):
         bot.reply_to(message, f'Firstly, add bot to chat')
 
 
+@bot.message_handler(commands=['meme'])
+def schedule_memes(message):
+    bot.send_photo(message.chat.id, Memer.get_random_meme())
+
+
 def send_wednesday_to_chat(bot_to_run, chat_id):
     bot_to_run.send_message(chat_id, "It's Wednesday, my dudes!")
     bot_to_run.send_photo(chat_id, Memer.get_random_wendesday())
@@ -43,16 +48,9 @@ def send_memes(bot_to_run, chat_id):
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
     bot.reply_to(message, f'Hello, {message.from_user.first_name}.\n'
-                          f'Add me to chat and send /wednesday @Wanbot to start reminding wednesdays\n'
-                          f'Or send /memes @Wanbot to get memes everyday')
-
-
-@bot.message_handler(content_types=['text'])
-def get_text_messages(message):
-    if message.text.lower() in ('привет', 'hello', 'hi'):
-        bot.send_message(message.from_user.id, 'Hello!')
-    else:
-        bot.send_message(message.from_user.id, 'Command ist recognised. Try to /help.')
+                          f'Send /meme to get insta meme\n'
+                          f'Add me to chat and send /wednesday to start reminding wednesdays\n'
+                          f'Or send /memes to get one meme everyday\n')
 
 
 def get_funcs_to_run():
