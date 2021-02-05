@@ -24,3 +24,7 @@ INSERT INTO public.schedule_types(
 INSERT INTO public.schedule_types(
 	task_name, period, task_type_id)
 	VALUES ('wednesday', 'wednesdays', 1);
+
+INSERT INTO public.schedule_types(
+	task_name, period, task_type_id)
+	VALUES ('meme_page', 'daily every 30 min', 2);
