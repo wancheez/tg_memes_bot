@@ -1,6 +1,6 @@
 import os
 import psycopg2
-from storage.base_storage import BaseScheduler, _run_scheduler_loop
+from storage.base_storage import BaseScheduler, _run_scheduler_loop, schedule_meme_page
 
 DB_NAME = os.environ['TG_DB_NAME']
 DB_USERNAME = os.environ['TG_DB_USERNAME']
@@ -37,6 +37,8 @@ class PGScheduler(BaseScheduler):
             except psycopg2.errors.UniqueViolation:
                 print('Unique violation. Ignoring')
                 cursor.execute('rollback')
+                return False
+        return True
 
     def _get_task_type_id_by_name(self, name):
         with self.conn.cursor() as cursor:
@@ -72,5 +74,6 @@ class PGScheduler(BaseScheduler):
 
         prepared_tasks['wednesday'] = (task['chat_id'] for task in tasks if task['task_name'] == 'wednesday')
         prepared_tasks['memes'] = (task['chat_id'] for task in tasks if task['task_name'] == 'memes')
+        prepared_tasks['meme_page'] = (task['chat_id'] for task in tasks if task['task_name'] == 'meme_page')
 
         _run_scheduler_loop(bot, funcs, prepared_tasks)
