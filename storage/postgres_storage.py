@@ -2,7 +2,7 @@ import os
 import psycopg2
 from storage.base_storage import BaseScheduler, _run_scheduler_loop
 
-DB_NAME = 'wancheezbot-db'
+DB_NAME = os.environ['TG_DB_NAME']
 DB_USERNAME = os.environ['TG_DB_USERNAME']
 DB_PASSWORD = os.environ['TG_DB_PASSWORD']
 DB_HOST = os.environ['TG_DB_HOST']
