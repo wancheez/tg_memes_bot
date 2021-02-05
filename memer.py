@@ -35,7 +35,6 @@ class Memer:
         for file in os.listdir(MEMES_TO_SAVE_PATH):
             os.remove(os.path.join(MEMES_TO_SAVE_PATH, file))
 
-
     @staticmethod
     def get_random_wendesday():
         pict_path = os.path.join(WEDNESDAY_MEMES_PATH, Memer.get_random_file(WEDNESDAY_MEMES_PATH))

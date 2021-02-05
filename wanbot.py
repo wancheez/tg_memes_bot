@@ -1,4 +1,4 @@
-from bot_scheduler import BotScheduler
+from storage.postgres_storage import PGScheduler
 import threading
 import telebot
 from memer import Memer
@@ -6,7 +6,7 @@ import os
 
 TOKEN = os.environ['TG_TOKEN']
 bot = telebot.TeleBot(TOKEN)
-bot_scheduler = BotScheduler()
+bot_scheduler = PGScheduler()
 
 
 @bot.message_handler(commands=['wednesday'])
@@ -55,13 +55,22 @@ def get_text_messages(message):
         bot.send_message(message.from_user.id, 'Command ist recognised. Try to /help.')
 
 
+def get_funcs_to_run():
+    funcs = {
+        'wednesday': send_wednesday_to_chat,
+        'memes': send_memes,
+    }
+    return funcs
+
+
 def run_bot_threads(scheduler_thread=None, bot_thread=None):
     if scheduler_thread and scheduler_thread.is_alive():
         scheduler_thread.join()
     if bot_thread and bot_thread.is_alive():
         bot_thread.join()
+
     scheduler_thread = threading.Thread(target=bot_scheduler.run_scheduler,
-                                        args=(bot, send_wednesday_to_chat, send_memes))
+                                        args=(bot, get_funcs_to_run()))
     bot_thread = threading.Thread(target=bot.polling, kwargs={'none_stop': True})
     scheduler_thread.start()
     bot_thread.start()
