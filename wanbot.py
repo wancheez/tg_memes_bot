@@ -60,11 +60,6 @@ def send_memes(bot_to_run, chat_id):
     bot_to_run.send_photo(chat_id, Memer.get_random_meme())
 
 
-@bot.message_handler(commands=['wednesday_test'])
-def send_memes(message):
-    bot.send_photo(message.chat.id, Memer.get_random_wendesday())
-
-
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
     bot.reply_to(message, f'Hello, {message.from_user.first_name}.\n'
