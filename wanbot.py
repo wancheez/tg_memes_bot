@@ -3,9 +3,11 @@ from storage.base_storage import schedule_meme_page, schedule_memes, schedule_we
 import threading
 import telebot
 from memer import Memer
+from urllib.error import HTTPError
 import os
 
 TOKEN = os.environ['TG_TOKEN']
+ADMIN_USER_ID = os.getenv('TG_ADMIN')
 bot = telebot.TeleBot(TOKEN)
 bot_scheduler = PGScheduler()
 
@@ -48,7 +50,19 @@ def schedule_meme_page_handler(message):
 
 @bot.message_handler(commands=['meme'])
 def send_meme_handler(message):
-    bot.send_photo(message.chat.id, Memer.get_random_meme())
+    success_sent = False
+    count_tries = 0
+    while not success_sent and count_tries<20:
+        try:
+            bot.send_photo(message.chat.id, Memer.get_random_meme())
+            success_sent = True
+        except telebot.apihelper.ApiTelegramException as exc:
+            print(f'Got TG exception while send_meme {exc}')
+            inform_admin(f'Got TG exception while send_meme {exc}')
+            count_tries += 1
+        except HTTPError as exc:
+            print(f'Got TG exception while send_meme {exc}')
+            inform_admin(f'Got TG exception while send_meme {exc}')
 
 
 def send_wednesday_to_chat(bot_to_run, chat_id):
@@ -66,6 +80,11 @@ def send_welcome(message):
                           f'Send /meme to get insta meme\n'
                           f'Add me to chat and send /wednesday to start reminding wednesdays\n'
                           f'Or send /memes to get one meme everyday\n')
+
+
+def inform_admin(text):
+    if ADMIN_USER_ID:
+        bot.send_message(chat_id=ADMIN_USER_ID, text=f'Hi, news for you: {text}')
 
 
 def get_funcs_to_run():
