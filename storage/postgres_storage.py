@@ -51,7 +51,6 @@ class PGScheduler(BaseScheduler):
         Get all scheduled tasks
         :return:
         """
-        tasks = None
         with self.conn.cursor() as cursor:
             cursor.execute(f"select st.chat_id, stp.task_name from schedule_tasks st, schedule_types stp "
                            "where st.task_type_id=stp.task_type_id")
