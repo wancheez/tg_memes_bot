@@ -43,10 +43,8 @@ def _run_scheduler_loop(bot, funcs, tasks):
     time.sleep(2)
     for wednesday_chat_id in tasks['wednesday']:
         schedule_wednesday(bot, funcs, wednesday_chat_id)
-        # schedule.every(5).seconds.do(funcs['wednesday'], bot, wednesday_chat_id)
     for memes_chat_id in tasks['memes']:
         schedule_memes(bot, funcs, memes_chat_id)
-        # schedule.every(5).seconds.do(funcs['memes'], bot, memes_chat_id)
     for meme_page_chat_id in tasks['meme_page']:
         schedule_meme_page(bot, funcs, meme_page_chat_id)
     print('Tasks scheduled')
@@ -66,4 +64,11 @@ def schedule_wednesday(bot, funcs, chat_id):
 
 
 def schedule_memes(bot, funcs, chat_id):
-    schedule.every().day.at("11:30").do(funcs['memes'], bot, chat_id)
+    # Exclude wednesday
+    schedule.every().sunday.at("11:30").do(funcs['memes'], bot, chat_id)
+    schedule.every().monday.at("11:30").do(funcs['memes'], bot, chat_id)
+    schedule.every().tuesday.at("11:30").do(funcs['memes'], bot, chat_id)
+    schedule.every().thursday.at("11:30").do(funcs['memes'], bot, chat_id)
+    schedule.every().friday.at("11:30").do(funcs['memes'], bot, chat_id)
+    schedule.every().saturday.at("11:30").do(funcs['memes'], bot, chat_id)
+
