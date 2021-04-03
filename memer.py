@@ -41,3 +41,16 @@ class Memer:
     @staticmethod
     def get_random_file(dir_path):
         return random.choice(os.listdir(dir_path))
+
+    @staticmethod
+    def generate_text(text):
+        req = requests.request(method='post',
+                                    headers={'Content-type': 'application/json'},
+                                    url='https://api.aicloud.sbercloud.ru/public/v1/public_inference/gpt3/predict',
+                                    json={'text': text})
+        if req.status_code == 200:
+            resp_json = req.json()
+            resp_text = resp_json['predictions']
+            return resp_text
+        else:
+            return f'Got exception from api: {req.status_code}'
