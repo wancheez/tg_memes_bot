@@ -53,6 +53,14 @@ def send_meme_handler(message):
     send_memes(bot, message.chat.id)
 
 
+@bot.message_handler(commands=['neuro_text'])
+def send_meme_handler(message):
+    memer = Memer()
+    msg_text = message.text.replace('/neuro_text ', '')
+    response = memer.generate_text(msg_text)
+    bot.reply_to(message, response)
+
+
 def send_wednesday_to_chat(bot_to_run, chat_id):
     bot_to_run.send_message(chat_id, "It's Wednesday, my dudes!")
     bot_to_run.send_photo(chat_id, Memer.get_random_wendesday())
