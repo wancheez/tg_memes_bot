@@ -24,6 +24,13 @@ def schedule_wednesday_handler(message):
         bot.send_message(request_obj['chat_id'], "Already been set")
 
 
+@bot.message_handler(commands=['unsubscribe_chat'])
+def unschedule_chat_handler(message):
+    msg_text = message.text.replace('/unsubscribe_chat ', '')
+    result_exec = unschedule_chat(msg_text)
+    bot.reply_to(message, result_exec)
+
+
 @bot.message_handler(commands=['memes'])
 def schedule_memes_handler(message):
     request_obj = {'chat_id': message.chat.id,
@@ -66,6 +73,14 @@ def send_wednesday_to_chat(bot_to_run, chat_id):
     bot_to_run.send_photo(chat_id, Memer.get_random_wendesday())
 
 
+def unschedule_chat(chat_id):
+    if not isinstance(chat_id, int):
+        if not str.isdigit(chat_id):
+            return 'Chat_id must be numeric'
+        chat_id = int(chat_id)
+    return bot_scheduler.delete_chat_id(chat_id)
+
+
 def send_memes(bot_to_run, chat_id):
     success_sent = False
     count_tries = 0
@@ -74,11 +89,14 @@ def send_memes(bot_to_run, chat_id):
             bot_to_run.send_photo(chat_id, Memer.get_random_meme())
             success_sent = True
         except telebot.apihelper.ApiTelegramException as exc:
+            if exc.error_code == 403:
+                result = unschedule_chat(chat_id)
+                inform_admin(f'Unscheduling chat_id={chat_id}. Result: {result}')
             print(f'API Error chat_id={chat_id}: {exc}')
             inform_admin(f'API Error chat_id={chat_id}: {exc}')
             count_tries += 1
         except HTTPError as exc:
-            print(f'HTTP PError on chat_id={chat_id}: {exc}')
+            print(f'HTTP Error on chat_id={chat_id}: {exc}')
             inform_admin(f'HTTP PError on chat_id={chat_id}: {exc}')
 
 
@@ -92,7 +110,7 @@ def send_welcome(message):
 
 def inform_admin(text):
     if ADMIN_USER_ID:
-        bot.send_message(chat_id=ADMIN_USER_ID, text=f'Hi, news for you: {text}')
+        bot.send_message(chat_id=ADMIN_USER_ID, text=text)
 
 
 def get_funcs_to_run():
