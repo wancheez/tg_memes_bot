@@ -1,6 +1,11 @@
 import os
+import time
+import schedule
+
 import psycopg2
-from storage.base_storage import BaseScheduler, _run_scheduler_loop, schedule_meme_page
+import threading
+from storage.base_storage import BaseScheduler, schedule_meme_page, schedule_memes, schedule_wednesday
+
 
 DB_NAME = os.environ['TG_DB_NAME']
 DB_USERNAME = os.environ['TG_DB_USERNAME']
@@ -13,6 +18,9 @@ class PGScheduler(BaseScheduler):
     def __init__(self):
         self.conn = psycopg2.connect(dbname=DB_NAME, user=DB_USERNAME,
                                      password=DB_PASSWORD, host=DB_HOST)
+        self.stop_event = threading.Event()
+        self.bot = None
+        self.funcs = None
 
     def update_scheduler(self, task_to_add: dict):
         """
@@ -40,6 +48,38 @@ class PGScheduler(BaseScheduler):
                 return False
         return True
 
+    def delete_chat_id(self, chat_id: int):
+        schedules = self._get_scheduler()
+        if chat_id not in [schedule['chat_id'] for schedule in schedules]:
+            return f'No such schedule with chat_id={chat_id}'
+        with self.conn.cursor() as cursor:
+            query = f'DELETE FROM schedule_tasks WHERE chat_id=%(chat_id)s'
+            cursor.execute(
+                query,
+                {'chat_id': chat_id}
+            )
+            self.conn.commit()
+        self.restart_scheduler()
+
+        return f'Scheduling with chat_id={chat_id} deleted'
+
+    def restart_scheduler(self):
+        """Restart scheduler
+
+        :return:
+        """
+        self.stop_event.set()
+        print(f'Scheduler stopping')
+        time.sleep(5)
+        self.stop_event.clear()
+        schedule_thread = threading.Thread(
+            target=self.run_scheduler,
+            args=(self.bot, self.funcs),
+            daemon=True,
+        )
+        time.sleep(5)
+        schedule_thread.start()
+
     def _get_task_type_id_by_name(self, name):
         with self.conn.cursor() as cursor:
             cursor.execute(f"select task_type_id from schedule_types st where st.task_name='{name}'")
@@ -63,16 +103,34 @@ class PGScheduler(BaseScheduler):
     def run_scheduler(self, bot, funcs):
         """
         Run all planned tasks
+        :param funcs:
         :param bot:
-        :param wednesday_task:
-        :param memes_task:
+
         :return:
         """
         tasks = self._get_scheduler()
         prepared_tasks = dict()
+        self.bot = bot
+        self.funcs = funcs
 
         prepared_tasks['wednesday'] = (task['chat_id'] for task in tasks if task['task_name'] == 'wednesday')
         prepared_tasks['memes'] = (task['chat_id'] for task in tasks if task['task_name'] == 'memes')
         prepared_tasks['meme_page'] = (task['chat_id'] for task in tasks if task['task_name'] == 'meme_page')
 
-        _run_scheduler_loop(bot, funcs, prepared_tasks)
+        self._run_scheduler_loop(bot, funcs, prepared_tasks)
+
+    def _run_scheduler_loop(self, bot, funcs, tasks):
+
+        time.sleep(2)
+        for wednesday_chat_id in tasks['wednesday']:
+            schedule_wednesday(bot, funcs, wednesday_chat_id)
+        for memes_chat_id in tasks['memes']:
+            schedule_memes(bot, funcs, memes_chat_id)
+        for meme_page_chat_id in tasks['meme_page']:
+            schedule_meme_page(bot, funcs, meme_page_chat_id)
+        print('Tasks scheduled')
+        while not self.stop_event.is_set():
+            schedule.run_pending()
+            time.sleep(1)
+
+        print('Scheduler stopped')

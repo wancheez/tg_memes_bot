@@ -1,4 +1,3 @@
-import json
 import time
 from abc import abstractmethod, ABC
 import schedule
@@ -31,32 +30,28 @@ class BaseScheduler(ABC):
         :param memes_task:
         :return:
         """
-        self.scheduler_runned = False
         time.sleep(2)
 
         tasks = self._get_scheduler()
-        _run_scheduler_loop(bot, funcs, tasks)
+        self._run_scheduler_loop(bot, funcs, tasks)
 
 
-def _run_scheduler_loop(bot, funcs, tasks):
-    scheduler_runned = False
-    time.sleep(2)
-    for wednesday_chat_id in tasks['wednesday']:
-        schedule_wednesday(bot, funcs, wednesday_chat_id)
-    for memes_chat_id in tasks['memes']:
-        schedule_memes(bot, funcs, memes_chat_id)
-    for meme_page_chat_id in tasks['meme_page']:
-        schedule_meme_page(bot, funcs, meme_page_chat_id)
-    print('Tasks scheduled')
-    scheduler_runned = True
-    while scheduler_runned:
-        schedule.run_pending()
-        time.sleep(1)
-    print('Scheduler stopped')
+    def _run_scheduler_loop(self, bot, funcs, tasks):
+        time.sleep(2)
+        for wednesday_chat_id in tasks['wednesday']:
+            schedule_wednesday(bot, funcs, wednesday_chat_id)
+        for memes_chat_id in tasks['memes']:
+            schedule_memes(bot, funcs, memes_chat_id)
+        for meme_page_chat_id in tasks['meme_page']:
+            schedule_meme_page(bot, funcs, meme_page_chat_id)
+        print('Tasks scheduled')
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
 
 
 def schedule_meme_page(bot, funcs, chat_id):
-    schedule.every(30).minutes.do(funcs['meme_page'], bot, chat_id)
+    schedule.every(2).hours.do(funcs['meme_page'], bot, chat_id)
 
 
 def schedule_wednesday(bot, funcs, chat_id):
