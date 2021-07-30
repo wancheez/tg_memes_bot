@@ -39,7 +39,7 @@ class PGScheduler(BaseScheduler):
         task_type_id = self._get_task_type_id_by_name(task_to_add['type'])
         with self.conn.cursor() as cursor:
             try:
-                cursor.execute(f"INSERT INTO schedule_tasks VALUES ('{task_type_id}', {chat_id})")
+                cursor.execute(f"INSERT INTO meme_schedules_scheduletask VALUES ('{task_type_id}', {chat_id})")
                 cursor.execute(f'commit')
                 print(f'PG Storage updated with {task_to_add["type"]} to {chat_id}')
             except psycopg2.errors.UniqueViolation:
@@ -53,7 +53,7 @@ class PGScheduler(BaseScheduler):
         if chat_id not in [schedule['chat_id'] for schedule in schedules]:
             return f'No such schedule with chat_id={chat_id}'
         with self.conn.cursor() as cursor:
-            query = f'DELETE FROM schedule_tasks WHERE chat_id=%(chat_id)s'
+            query = f'DELETE FROM meme_schedules_scheduletask WHERE chat_id=%(chat_id)s'
             cursor.execute(
                 query,
                 {'chat_id': chat_id}
@@ -82,7 +82,7 @@ class PGScheduler(BaseScheduler):
 
     def _get_task_type_id_by_name(self, name):
         with self.conn.cursor() as cursor:
-            cursor.execute(f"select task_type_id from schedule_types st where st.task_name='{name}'")
+            cursor.execute(f"select task_type_id from meme_schedules_tasktype st where st.task_name='{name}'")
             type_id = [type_id for type_id in cursor]
         return type_id[0][0]
 
@@ -92,8 +92,9 @@ class PGScheduler(BaseScheduler):
         :return:
         """
         with self.conn.cursor() as cursor:
-            cursor.execute(f"select st.chat_id, stp.task_name from schedule_tasks st, schedule_types stp "
-                           "where st.task_type_id=stp.task_type_id")
+            cursor.execute(f"""select st.chat_id, stp.task_name 
+                           from meme_schedules_scheduletask st, meme_schedules_tasktype stp 
+                           where st.task_type_id=stp.task_type_id""")
             tasks_raw = [task for task in cursor]
             col_names = [desc[0] for desc in cursor.description]
             # map column_names with values
