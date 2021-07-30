@@ -19,7 +19,8 @@ class Memer:
         filename = os.path.join(MEMES_TO_SAVE_PATH, filename)
         wget.download(meme_json['url'], filename)
         meme_img = open(filename, 'rb')
-        return meme_img
+        file_ext = filename.split('.')[-1]
+        return meme_img, file_ext
 
     @staticmethod
     def clear_dir():

@@ -61,7 +61,7 @@ def send_meme_handler(message):
 
 
 @bot.message_handler(commands=['neuro_text'])
-def send_meme_handler(message):
+def neuro_text_handler(message):
     memer = Memer()
     msg_text = message.text.replace('/neuro_text ', '')
     response = memer.generate_text(msg_text)
@@ -86,7 +86,11 @@ def send_memes(bot_to_run, chat_id):
     count_tries = 0
     while not success_sent and count_tries < 5:
         try:
-            bot_to_run.send_photo(chat_id, Memer.get_random_meme())
+            meme, meme_ext = Memer.get_random_meme()
+            if meme_ext.lower() == 'gif':
+                bot_to_run.send_document(chat_id, meme)
+            else:
+                bot_to_run.send_photo(chat_id, meme)
             success_sent = True
         except telebot.apihelper.ApiTelegramException as exc:
             if exc.error_code == 403:
