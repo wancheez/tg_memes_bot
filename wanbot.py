@@ -1,3 +1,6 @@
+import datetime
+import random
+
 from storage.postgres_storage import PGScheduler
 from storage.base_storage import schedule_meme_page, schedule_memes, schedule_wednesday
 import threading
@@ -14,8 +17,7 @@ bot_scheduler = PGScheduler()
 
 @bot.message_handler(commands=['wednesday'])
 def schedule_wednesday_handler(message):
-    request_obj = {'chat_id': message.chat.id,
-                   'type': 'wednesday'}
+    request_obj = _get_chat_info(message, 'wednesday')
     result_upd = bot_scheduler.update_scheduler(task_to_add=request_obj)
     if result_upd:
         schedule_wednesday(bot, get_funcs_to_run(), message.chat.id)
@@ -33,8 +35,7 @@ def unschedule_chat_handler(message):
 
 @bot.message_handler(commands=['memes'])
 def schedule_memes_handler(message):
-    request_obj = {'chat_id': message.chat.id,
-                   'type': 'memes'}
+    request_obj = _get_chat_info(message, 'memes')
     result_upd = bot_scheduler.update_scheduler(task_to_add=request_obj)
     if result_upd:
         schedule_memes(bot, get_funcs_to_run(), message.chat.id)
@@ -45,8 +46,7 @@ def schedule_memes_handler(message):
 
 @bot.message_handler(commands=['meme_page'])
 def schedule_meme_page_handler(message):
-    request_obj = {'chat_id': message.chat.id,
-                   'type': 'meme_page'}
+    request_obj = _get_chat_info(message, 'meme_page')
     result_upd = bot_scheduler.update_scheduler(task_to_add=request_obj)
     if result_upd:
         schedule_meme_page(bot, get_funcs_to_run(), message.chat.id)
@@ -65,6 +65,12 @@ def neuro_text_handler(message):
     memer = Memer()
     msg_text = message.text.replace('/neuro_text ', '')
     response = memer.generate_text(msg_text)
+    bot.reply_to(message, response)
+
+
+@bot.message_handler(commands=['булава'])
+def neuro_text_handler(message):
+    response = f'🍆У {message.from_user.first_name} булава {random.randint(1,50)} см 🍆'
     bot.reply_to(message, response)
 
 
@@ -106,10 +112,13 @@ def send_memes(bot_to_run, chat_id):
 
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
-    bot.reply_to(message, f'Hello, {message.from_user.first_name}.\n'
-                          f'Send /meme to get insta meme\n'
-                          f'Add me to chat and send /wednesday to start reminding wednesdays\n'
-                          f'Or send /memes to get one meme everyday\n')
+    bot.reply_to(message, f"""Hello, {message.from_user.first_name}.
+/meme to get insta meme
+/wednesday reminding wednesdays
+/memes to get one meme everyday
+/meme_page memes every 2 hours
+/neuro_text <text> generate text with yandex neural networks
+/булава 🍆""")
 
 
 def inform_admin(text):
@@ -139,6 +148,19 @@ def run_bot_threads(scheduler_thread=None, bot_thread=None):
     bot_thread.start()
 
 
+def _get_chat_info(message, type_name):
+    if message.chat.title:
+        title = message.chat.title
+    else:
+        title = f'Chat with {message.chat.username}'
+    return {
+        'chat_id': message.chat.id,
+        'type': type_name,
+        'chat_title': title,
+        'created': datetime.datetime.now(),
+        'creator': message.from_user.username,
+    }
+
+
 if __name__ == "__main__":
     run_bot_threads()
-
