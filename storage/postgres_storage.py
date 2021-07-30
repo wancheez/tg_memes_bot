@@ -34,13 +34,20 @@ class PGScheduler(BaseScheduler):
             cursor.execute(f'SELECT * FROM schedule_tasks')
             tasks = [task for task in cursor]
         if task_to_add in tasks:
+            print(f'Chat already added')
             return
         chat_id = task_to_add['chat_id']
-        task_type_id = self._get_task_type_id_by_name(task_to_add['type'])
+        task_to_add['task_type_id'] = self._get_task_type_id_by_name(task_to_add['type'])
+
         with self.conn.cursor() as cursor:
             try:
-                cursor.execute(f"INSERT INTO schedule_tasks VALUES ('{task_type_id}', {chat_id})")
-                cursor.execute(f'commit')
+                cursor.execute("""
+                    INSERT INTO meme_schedules_scheduletask (chat_id, task_type_id, chat_title, created, creator)
+                    VALUES (%(chat_id)s, %(task_type_id)s, %(chat_title)s, %(created)s, %(creator)s)
+                    """,
+                    task_to_add,
+                )
+                cursor.execute('commit')
                 print(f'PG Storage updated with {task_to_add["type"]} to {chat_id}')
             except psycopg2.errors.UniqueViolation:
                 print('Unique violation. Ignoring')
