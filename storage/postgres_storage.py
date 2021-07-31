@@ -31,7 +31,7 @@ class PGScheduler(BaseScheduler):
         if not all(mand_key in task_to_add for mand_key in ('chat_id', 'type')):
             raise ValueError('Schedule type and chat id are mandatory')
         with self.conn.cursor() as cursor:
-            cursor.execute(f'SELECT * FROM schedule_tasks')
+            cursor.execute(f'SELECT * FROM meme_schedules_scheduletask')
             tasks = [task for task in cursor]
         if task_to_add in tasks:
             print(f'Chat already added')
@@ -99,9 +99,9 @@ class PGScheduler(BaseScheduler):
         :return:
         """
         with self.conn.cursor() as cursor:
-            cursor.execute(f"""select st.chat_id, stp.task_name 
+            cursor.execute(f"""select st.chat_id, stp.name as task_name
                            from meme_schedules_scheduletask st, meme_schedules_tasktype stp 
-                           where st.task_type_id=stp.task_type_id""")
+                           where st.task_type_id=stp.id""")
             tasks_raw = [task for task in cursor]
             col_names = [desc[0] for desc in cursor.description]
             # map column_names with values
