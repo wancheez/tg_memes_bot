@@ -13,7 +13,7 @@ class Memer:
     @staticmethod
     def get_random_meme():
         Memer.clear_dir()
-        meme_response = requests.request(method='Get', url='https://meme-api.herokuapp.com/gimme')
+        meme_response = requests.get(url='https://meme-api.herokuapp.com/gimme')
         meme_json = meme_response.json()
         filename = meme_json['url'].split("/")[-1]
         filename = os.path.join(MEMES_TO_SAVE_PATH, filename)
@@ -30,10 +30,8 @@ class Memer:
             except PermissionError:
                 pass
 
-
-
     @staticmethod
-    def get_random_wendesday():
+    def get_random_wednesday():
         pict_path = os.path.join(WEDNESDAY_MEMES_PATH, Memer.get_random_file(WEDNESDAY_MEMES_PATH))
         img = open(pict_path, 'rb')
         print(f'Got random pict {pict_path}')
@@ -46,9 +44,9 @@ class Memer:
     @staticmethod
     def generate_text(text):
         req = requests.request(method='post',
-                                    headers={'Content-type': 'application/json'},
-                                    url='https://api.aicloud.sbercloud.ru/public/v1/public_inference/gpt3/predict',
-                                    json={'text': text})
+                               headers={'Content-type': 'application/json'},
+                               url='https://api.aicloud.sbercloud.ru/public/v1/public_inference/gpt3/predict',
+                               json={'text': text})
         if req.status_code == 200:
             resp_json = req.json()
             resp_text = resp_json['predictions']
