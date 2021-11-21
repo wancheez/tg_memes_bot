@@ -1,82 +1,85 @@
 import datetime
 import random
+import logging
 
 from storage.postgres_storage import PGScheduler
 from storage.base_storage import schedule_meme_page, schedule_memes, schedule_wednesday
 import threading
-import telebot
+from aiogram import Bot, Dispatcher, executor, types, exceptions
 from memer import Memer
 from urllib.error import HTTPError
 import os
 
 TOKEN = os.environ['TG_TOKEN']
 ADMIN_USER_ID = os.getenv('TG_ADMIN')
-bot = telebot.TeleBot(TOKEN)
+bot = Bot(TOKEN)
+dp = Dispatcher(bot)
 bot_scheduler = PGScheduler()
+logging.basicConfig(level=logging.INFO)
 
 
-@bot.message_handler(commands=['wednesday'])
-def schedule_wednesday_handler(message):
+@dp.message_handler(commands=['wednesday'])
+async def schedule_wednesday_handler(message: types.Message):
     request_obj = _get_chat_info(message, 'wednesday')
     result_upd = bot_scheduler.update_scheduler(task_to_add=request_obj)
     if result_upd:
         schedule_wednesday(bot, get_funcs_to_run(), message.chat.id)
-        bot.send_message(request_obj['chat_id'], "There will be Wednesday, my dudes!")
+        await bot.send_message(request_obj['chat_id'], "There will be Wednesday, my dudes!")
     else:
-        bot.send_message(request_obj['chat_id'], "Already been set")
+        await bot.send_message(request_obj['chat_id'], "Already been set")
 
 
-@bot.message_handler(commands=['unsubscribe_chat'])
-def unschedule_chat_handler(message):
+@dp.message_handler(commands=['unsubscribe_chat'])
+async def unschedule_chat_handler(message):
     msg_text = message.text.replace('/unsubscribe_chat ', '')
     result_exec = unschedule_chat(msg_text)
-    bot.reply_to(message, result_exec)
+    await message.reply(result_exec)
 
 
-@bot.message_handler(commands=['memes'])
-def schedule_memes_handler(message):
+@dp.message_handler(commands=['memes'])
+async def schedule_memes_handler(message):
     request_obj = _get_chat_info(message, 'memes')
     result_upd = bot_scheduler.update_scheduler(task_to_add=request_obj)
     if result_upd:
         schedule_memes(bot, get_funcs_to_run(), message.chat.id)
-        bot.send_message(request_obj['chat_id'], "Get ready to memes")
+        await bot.send_message(request_obj['chat_id'], "Get ready to memes")
     else:
-        bot.send_message(request_obj['chat_id'], "Already been set")
+        await bot.send_message(request_obj['chat_id'], "Already been set")
 
 
-@bot.message_handler(commands=['meme_page'])
-def schedule_meme_page_handler(message):
+@dp.message_handler(commands=['meme_page'])
+async def schedule_meme_page_handler(message):
     request_obj = _get_chat_info(message, 'meme_page')
     result_upd = bot_scheduler.update_scheduler(task_to_add=request_obj)
     if result_upd:
         schedule_meme_page(bot, get_funcs_to_run(), message.chat.id)
-        bot.send_message(request_obj['chat_id'], "Now this is meme territory")
+        await bot.send_message(request_obj['chat_id'], "Now this is meme territory")
     else:
-        bot.send_message(request_obj['chat_id'], "Already been set")
+        await bot.send_message(request_obj['chat_id'], "Already been set")
 
 
-@bot.message_handler(commands=['meme'])
-def send_meme_handler(message):
-    send_memes(bot, message.chat.id)
+@dp.message_handler(commands=['meme'])
+async def send_meme_handler(message):
+    await send_memes(bot, message.chat.id)
 
 
-@bot.message_handler(commands=['neuro_text'])
-def neuro_text_handler(message):
+@dp.message_handler(commands=['neuro_text'])
+async def neuro_text_handler(message):
     memer = Memer()
     msg_text = message.text.replace('/neuro_text ', '')
-    response = memer.generate_text(msg_text)
-    bot.reply_to(message, response)
+    response = await memer.generate_text(msg_text)
+    await message.reply(response)
 
 
-@bot.message_handler(commands=['булава'])
-def neuro_text_handler(message):
+@dp.message_handler(commands=['булава'])
+async def neuro_text_handler(message):
     response = f'🍆У {message.from_user.first_name} булава {random.randint(1,50)} см 🍆'
-    bot.reply_to(message, response)
+    await message.reply(response)
 
 
-def send_wednesday_to_chat(bot_to_run, chat_id):
-    bot_to_run.send_message(chat_id, "It's Wednesday, my dudes!")
-    bot_to_run.send_photo(chat_id, Memer.get_random_wednesday())
+async def send_wednesday_to_chat(bot_to_run, chat_id):
+    await bot_to_run.send_message(chat_id, "It's Wednesday, my dudes!")
+    await bot_to_run.send_photo(chat_id, Memer.get_random_wednesday())
 
 
 def unschedule_chat(chat_id):
@@ -87,32 +90,29 @@ def unschedule_chat(chat_id):
     return bot_scheduler.delete_chat_id(chat_id)
 
 
-def send_memes(bot_to_run, chat_id):
+async def send_memes(bot_to_run, chat_id):
     success_sent = False
     count_tries = 0
     while not success_sent and count_tries < 5:
         try:
-            meme, meme_ext = Memer.get_random_meme()
+            meme, meme_ext = await Memer().get_random_meme()
             if meme_ext.lower() == 'gif':
-                bot_to_run.send_document(chat_id, meme)
+                await bot_to_run.send_document(chat_id, meme)
             else:
-                bot_to_run.send_photo(chat_id, meme)
+                await bot_to_run.send_photo(chat_id, meme)
             success_sent = True
-        except telebot.apihelper.ApiTelegramException as exc:
-            if exc.error_code == 403:
-                result = unschedule_chat(chat_id)
-                inform_admin(f'Unscheduling chat_id={chat_id}. Result: {result}')
-            print(f'API Error chat_id={chat_id}: {exc}')
-            inform_admin(f'API Error chat_id={chat_id}: {exc}')
+        except exceptions.TelegramAPIError as exc:
+            logging.error(f'API Error chat_id={chat_id}: {exc}')
+            await inform_admin(f'API Error chat_id={chat_id}: {exc}')
             count_tries += 1
         except HTTPError as exc:
-            print(f'HTTP Error on chat_id={chat_id}: {exc}')
-            inform_admin(f'HTTP PError on chat_id={chat_id}: {exc}')
+            logging.error(f'HTTP Error on chat_id={chat_id}: {exc}')
+            await inform_admin(f'HTTP PError on chat_id={chat_id}: {exc}')
 
 
-@bot.message_handler(commands=['start', 'help'])
-def send_welcome(message):
-    bot.reply_to(message, f"""Hello, {message.from_user.first_name}.
+@dp.message_handler(commands=['start', 'help'])
+async def send_welcome(message):
+    await message.reply(f"""Hello, {message.from_user.first_name}.
 /meme to get insta meme
 /wednesday reminding wednesdays
 /memes to get one meme everyday
@@ -121,9 +121,9 @@ def send_welcome(message):
 /булава 🍆""")
 
 
-def inform_admin(text):
+async def inform_admin(text):
     if ADMIN_USER_ID:
-        bot.send_message(chat_id=ADMIN_USER_ID, text=text)
+        await bot.send_message(chat_id=ADMIN_USER_ID, text=text)
 
 
 def get_funcs_to_run():
@@ -135,17 +135,14 @@ def get_funcs_to_run():
     return funcs
 
 
-def run_bot_threads(scheduler_thread=None, bot_thread=None):
+def run_bot_threads(scheduler_thread=None):
     if scheduler_thread and scheduler_thread.is_alive():
         scheduler_thread.join()
-    if bot_thread and bot_thread.is_alive():
-        bot_thread.join()
 
     scheduler_thread = threading.Thread(target=bot_scheduler.run_scheduler,
                                         args=(bot, get_funcs_to_run()))
-    bot_thread = threading.Thread(target=bot.polling, kwargs={'none_stop': True})
     scheduler_thread.start()
-    bot_thread.start()
+    executor.start_polling(dp, skip_updates=True)
 
 
 def _get_chat_info(message, type_name):
