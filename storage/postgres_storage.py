@@ -109,7 +109,7 @@ class PGScheduler(BaseScheduler):
         tasks = [dict(zip(col_names, task)) for task in tasks_raw]
         return tasks
 
-    def run_scheduler(self, bot, funcs):
+    async def run_scheduler(self, bot, funcs):
         """
         Run all planned tasks
         :param funcs:
@@ -126,9 +126,9 @@ class PGScheduler(BaseScheduler):
         prepared_tasks['memes'] = (task['chat_id'] for task in tasks if task['task_name'] == 'memes')
         prepared_tasks['meme_page'] = (task['chat_id'] for task in tasks if task['task_name'] == 'meme_page')
 
-        self._run_scheduler_loop(bot, funcs, prepared_tasks)
+        await self._run_scheduler_loop(bot, funcs, prepared_tasks)
 
-    def _run_scheduler_loop(self, bot, funcs, tasks):
+    async def _run_scheduler_loop(self, bot, funcs, tasks):
 
         time.sleep(2)
         for wednesday_chat_id in tasks['wednesday']:
@@ -138,8 +138,5 @@ class PGScheduler(BaseScheduler):
         for meme_page_chat_id in tasks['meme_page']:
             schedule_meme_page(bot, funcs, meme_page_chat_id)
         print('Tasks scheduled')
-        while not self.stop_event.is_set():
-            await aioschedule.run_pending()
-            time.sleep(1)
-
-        print('Scheduler stopped')
+        await aioschedule.run_pending()
+        await asyncio.sleep(1)
