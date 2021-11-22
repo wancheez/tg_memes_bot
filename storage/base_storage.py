@@ -1,6 +1,7 @@
 import time
 from abc import abstractmethod, ABC
-import schedule
+import aioschedule as schedule
+
 
 SCHEDULER_FILE_DEFAULT = 'scheduler.json'
 
@@ -35,7 +36,6 @@ class BaseScheduler(ABC):
         tasks = self._get_scheduler()
         self._run_scheduler_loop(bot, funcs, tasks)
 
-
     def _run_scheduler_loop(self, bot, funcs, tasks):
         time.sleep(2)
         for wednesday_chat_id in tasks['wednesday']:
@@ -51,6 +51,7 @@ class BaseScheduler(ABC):
 
 
 def schedule_meme_page(bot, funcs, chat_id):
+
     schedule.every(2).hours.do(funcs['meme_page'], bot, chat_id)
 
 
