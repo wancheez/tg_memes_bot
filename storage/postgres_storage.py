@@ -139,7 +139,7 @@ class PGScheduler(BaseScheduler):
             schedule_meme_page(bot, funcs, meme_page_chat_id)
         print('Tasks scheduled')
         while not self.stop_event.is_set():
-            asyncio.run(aioschedule.run_pending())
+            await aioschedule.run_pending()
             time.sleep(1)
 
         print('Scheduler stopped')
