@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import random
 import logging
@@ -135,15 +136,9 @@ def get_funcs_to_run():
     return funcs
 
 
-def run_bot_threads(scheduler_thread=None):
-    if scheduler_thread and scheduler_thread.is_alive():
-        scheduler_thread.join()
-
-    scheduler_thread = threading.Thread(target=bot_scheduler.run_scheduler,
-                                        args=(bot, get_funcs_to_run()))
-    scheduler_thread.start()
-    executor.start_polling(dp, skip_updates=True)
-
+async def on_startup(_):
+    bot_scheduler.run_scheduler(bot, get_funcs_to_run())
+    asyncio.create_task(bot_scheduler.serve_scheduler())
 
 def _get_chat_info(message, type_name):
     if message.chat.title:
@@ -160,4 +155,6 @@ def _get_chat_info(message, type_name):
 
 
 if __name__ == "__main__":
-    run_bot_threads()
+    executor.start_polling(dp, skip_updates=True, on_startup=on_startup)
+
+

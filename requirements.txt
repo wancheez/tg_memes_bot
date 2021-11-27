@@ -1,5 +1,5 @@
 requests==2.25.1
-schedule==1.0.0
+aioschedule==0.5.2
 urllib3==1.26.3
 wget==3.2
 psycopg2

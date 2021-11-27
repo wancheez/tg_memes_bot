@@ -1,6 +1,7 @@
 import os
 import time
-import schedule
+import aioschedule
+import asyncio
 
 import psycopg2
 import threading
@@ -137,8 +138,8 @@ class PGScheduler(BaseScheduler):
         for meme_page_chat_id in tasks['meme_page']:
             schedule_meme_page(bot, funcs, meme_page_chat_id)
         print('Tasks scheduled')
-        while not self.stop_event.is_set():
-            schedule.run_pending()
-            time.sleep(1)
 
-        print('Scheduler stopped')
+    async def serve_scheduler(self):
+        while True:
+            await aioschedule.run_pending()
+            await asyncio.sleep(0.1)
