@@ -137,8 +137,8 @@ def get_funcs_to_run():
 
 
 async def on_startup(_):
-    asyncio.create_task(bot_scheduler.run_scheduler(bot, get_funcs_to_run()))
-
+    bot_scheduler.run_scheduler(bot, get_funcs_to_run())
+    asyncio.create_task(bot_scheduler.serve_scheduler())
 
 def _get_chat_info(message, type_name):
     if message.chat.title:
@@ -156,4 +156,5 @@ def _get_chat_info(message, type_name):
 
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True, on_startup=on_startup)
+
 
