@@ -21,8 +21,10 @@ class Memer:
             meme_url = f'https://meme-api.herokuapp.com/gimme/{subreddit}'
             async with session.get(meme_url) as meme_response:
                 meme_json = await meme_response.json()
-
-        filename = meme_json['url'].split("/")[-1]
+        try:
+            filename = meme_json['url'].split("/")[-1]
+        except KeyError:
+            raise ValueError(f'Could not get meme for sub {subreddit}')
         filename = os.path.join(MEMES_TO_SAVE_PATH, filename)
         wget.download(meme_json['url'], filename)
         meme_img = open(filename, 'rb')

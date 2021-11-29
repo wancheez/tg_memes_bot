@@ -61,7 +61,10 @@ async def schedule_meme_page_handler(message):
 @dp.message_handler(commands=['meme'])
 async def send_meme_handler(message):
     subreddit = message.get_args()
-    await send_memes(bot, message.chat.id, subreddit=subreddit)
+    try:
+        await send_memes(bot, message.chat.id, subreddit=subreddit)
+    except ValueError as ex:
+        await message.reply(ex)
 
 
 @dp.message_handler(commands=['neuro_text'])
@@ -78,9 +81,10 @@ async def neuro_text_handler(message):
     await message.reply(response)
 
 
+@dp.message_handler(commands=['Wednesday'])
 async def send_wednesday_to_chat(bot_to_run, chat_id):
     await bot_to_run.send_message(chat_id, "It's Wednesday, my dudes!")
-    await bot_to_run.send_photo(chat_id, Memer.get_random_wednesday())
+    await bot_to_run.send_photo(chat_id, Memer().get_random_wednesday())
 
 
 def unschedule_chat(chat_id):
