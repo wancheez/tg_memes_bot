@@ -5,7 +5,6 @@ import logging
 
 from storage.postgres_storage import PGScheduler
 from storage.base_storage import schedule_meme_page, schedule_memes, schedule_wednesday
-import threading
 from aiogram import Bot, Dispatcher, executor, types, exceptions
 from memer import Memer
 from urllib.error import HTTPError
@@ -42,7 +41,7 @@ async def schedule_memes_handler(message):
     request_obj = _get_chat_info(message, 'memes')
     result_upd = bot_scheduler.update_scheduler(task_to_add=request_obj)
     if result_upd:
-        schedule_memes(bot, get_funcs_to_run(), message.chat.id)
+        schedule_memes(bot, get_funcs_to_run(), message.chat.id, subreddit=request_obj.get('arg', ''))
         await bot.send_message(request_obj['chat_id'], "Get ready to memes")
     else:
         await bot.send_message(request_obj['chat_id'], "Already been set")
@@ -53,7 +52,7 @@ async def schedule_meme_page_handler(message):
     request_obj = _get_chat_info(message, 'meme_page')
     result_upd = bot_scheduler.update_scheduler(task_to_add=request_obj)
     if result_upd:
-        schedule_meme_page(bot, get_funcs_to_run(), message.chat.id)
+        schedule_meme_page(bot, get_funcs_to_run(), message.chat.id, subreddit=request_obj.get('arg', ''))
         await bot.send_message(request_obj['chat_id'], "Now this is meme territory")
     else:
         await bot.send_message(request_obj['chat_id'], "Already been set")
@@ -61,7 +60,8 @@ async def schedule_meme_page_handler(message):
 
 @dp.message_handler(commands=['meme'])
 async def send_meme_handler(message):
-    await send_memes(bot, message.chat.id)
+    subreddit = message.get_args()
+    await send_memes(bot, message.chat.id, subreddit=subreddit)
 
 
 @dp.message_handler(commands=['neuro_text'])
@@ -91,12 +91,12 @@ def unschedule_chat(chat_id):
     return bot_scheduler.delete_chat_id(chat_id)
 
 
-async def send_memes(bot_to_run, chat_id):
+async def send_memes(bot_to_run, chat_id, subreddit=''):
     success_sent = False
     count_tries = 0
     while not success_sent and count_tries < 5:
         try:
-            meme, meme_ext = await Memer().get_random_meme()
+            meme, meme_ext = await Memer().get_random_meme(subreddit)
             if meme_ext.lower() == 'gif':
                 await bot_to_run.send_document(chat_id, meme)
             else:
@@ -140,17 +140,21 @@ async def on_startup(_):
     bot_scheduler.run_scheduler(bot, get_funcs_to_run())
     asyncio.create_task(bot_scheduler.serve_scheduler())
 
+
 def _get_chat_info(message, type_name):
+    args = message.get_args()
     if message.chat.title:
         title = message.chat.title
     else:
         title = f'Chat with {message.chat.username}'
+
     return {
         'chat_id': message.chat.id,
         'type': type_name,
         'chat_title': title,
         'created': datetime.datetime.now(),
         'creator': message.from_user.username,
+        'subreddit': args if args else '',
     }
 
 
