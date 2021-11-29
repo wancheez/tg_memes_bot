@@ -43,8 +43,8 @@ class PGScheduler(BaseScheduler):
         with self.conn.cursor() as cursor:
             try:
                 cursor.execute("""
-                    INSERT INTO meme_schedules_scheduletask (chat_id, task_type_id, chat_title, created, creator)
-                    VALUES (%(chat_id)s, %(task_type_id)s, %(chat_title)s, %(created)s, %(creator)s)
+                    INSERT INTO meme_schedules_scheduletask (chat_id, task_type_id, chat_title, created, creator, subreddit)
+                    VALUES (%(chat_id)s, %(task_type_id)s, %(chat_title)s, %(created)s, %(creator)s,  %(subreddit)s)
                     """,
                     task_to_add,
                 )
@@ -90,7 +90,7 @@ class PGScheduler(BaseScheduler):
 
     def _get_task_type_id_by_name(self, name):
         with self.conn.cursor() as cursor:
-            cursor.execute(f"select task_type_id from meme_schedules_tasktype st where st.task_name='{name}'")
+            cursor.execute(f"select id from meme_schedules_tasktype st where st.name='{name}'")
             type_id = [type_id for type_id in cursor]
         return type_id[0][0]
 
@@ -100,7 +100,7 @@ class PGScheduler(BaseScheduler):
         :return:
         """
         with self.conn.cursor() as cursor:
-            cursor.execute(f"""select st.chat_id, stp.name as task_name
+            cursor.execute(f"""select st.chat_id, stp.name as task_name, st.subreddit
                            from meme_schedules_scheduletask st, meme_schedules_tasktype stp 
                            where st.task_type_id=stp.id""")
             tasks_raw = [task for task in cursor]
@@ -122,21 +122,21 @@ class PGScheduler(BaseScheduler):
         self.bot = bot
         self.funcs = funcs
 
-        prepared_tasks['wednesday'] = (task['chat_id'] for task in tasks if task['task_name'] == 'wednesday')
-        prepared_tasks['memes'] = (task['chat_id'] for task in tasks if task['task_name'] == 'memes')
-        prepared_tasks['meme_page'] = (task['chat_id'] for task in tasks if task['task_name'] == 'meme_page')
+        prepared_tasks['wednesday'] = (task for task in tasks if task['task_name'] == 'wednesday')
+        prepared_tasks['memes'] = (task for task in tasks if task['task_name'] == 'memes')
+        prepared_tasks['meme_page'] = (task for task in tasks if task['task_name'] == 'meme_page')
 
         self._run_scheduler_loop(bot, funcs, prepared_tasks)
 
     def _run_scheduler_loop(self, bot, funcs, tasks):
 
         time.sleep(2)
-        for wednesday_chat_id in tasks['wednesday']:
-            schedule_wednesday(bot, funcs, wednesday_chat_id)
-        for memes_chat_id in tasks['memes']:
-            schedule_memes(bot, funcs, memes_chat_id)
-        for meme_page_chat_id in tasks['meme_page']:
-            schedule_meme_page(bot, funcs, meme_page_chat_id)
+        for wednesday_task in tasks['wednesday']:
+            schedule_wednesday(bot, funcs, wednesday_task['chat_id'])
+        for memes_task in tasks['memes']:
+            schedule_memes(bot, funcs, memes_task['chat_id'], memes_task['subreddit'])
+        for meme_page_task in tasks['meme_page']:
+            schedule_meme_page(bot, funcs, meme_page_task['chat_id'], meme_page_task['subreddit'])
         print('Tasks scheduled')
 
     async def serve_scheduler(self):

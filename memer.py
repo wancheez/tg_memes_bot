@@ -14,11 +14,11 @@ class Memer:
 
     Также включает другие фишки.
     """
-    async def get_random_meme(self):
+    async def get_random_meme(self, subreddit=''):
         self._clear_dir()
         async with aiohttp.ClientSession() as session:
 
-            meme_url = 'https://meme-api.herokuapp.com/gimme'
+            meme_url = f'https://meme-api.herokuapp.com/gimme/{subreddit}'
             async with session.get(meme_url) as meme_response:
                 meme_json = await meme_response.json()
 

@@ -50,21 +50,21 @@ class BaseScheduler(ABC):
             time.sleep(1)
 
 
-def schedule_meme_page(bot, funcs, chat_id):
+def schedule_meme_page(bot, funcs, chat_id, subreddit):
 
-    schedule.every(2).hours.do(funcs['meme_page'], bot, chat_id)
+    schedule.every(2).hours.do(funcs['meme_page'], bot, chat_id, subreddit)
 
 
 def schedule_wednesday(bot, funcs, chat_id):
     schedule.every().wednesday.at("10:00").do(funcs['wednesday'], bot, chat_id)
 
 
-def schedule_memes(bot, funcs, chat_id):
+def schedule_memes(bot, funcs, chat_id, subreddit):
     # Exclude wednesday
-    schedule.every().sunday.at("11:30").do(funcs['memes'], bot, chat_id)
-    schedule.every().monday.at("11:30").do(funcs['memes'], bot, chat_id)
-    schedule.every().tuesday.at("11:30").do(funcs['memes'], bot, chat_id)
-    schedule.every().thursday.at("11:30").do(funcs['memes'], bot, chat_id)
-    schedule.every().friday.at("11:30").do(funcs['memes'], bot, chat_id)
-    schedule.every().saturday.at("11:30").do(funcs['memes'], bot, chat_id)
+    schedule.every().sunday.at("11:30").do(funcs['memes'], bot, chat_id, subreddit)
+    schedule.every().monday.at("11:30").do(funcs['memes'], bot, chat_id, subreddit)
+    schedule.every().tuesday.at("11:30").do(funcs['memes'], bot, chat_id, subreddit)
+    schedule.every().thursday.at("11:30").do(funcs['memes'], bot, chat_id, subreddit)
+    schedule.every().friday.at("11:30").do(funcs['memes'], bot, chat_id, subreddit)
+    schedule.every().saturday.at("11:30").do(funcs['memes'], bot, chat_id, subreddit)
 
