@@ -18,7 +18,12 @@ bot_scheduler = PGScheduler()
 logging.basicConfig(level=logging.INFO)
 
 
-@dp.message_handler(commands=['wednesday'])
+@dp.message_handler(commands=['wednesday_now'])
+async def schedule_wednesday_handler(message: types.Message):
+    await send_wednesday_to_chat(bot, message.chat.id)
+
+
+@dp.message_handler(commands=['subscribe_wednesday'])
 async def schedule_wednesday_handler(message: types.Message):
     request_obj = _get_chat_info(message, 'wednesday')
     result_upd = bot_scheduler.update_scheduler(task_to_add=request_obj)
@@ -81,7 +86,6 @@ async def neuro_text_handler(message):
     await message.reply(response)
 
 
-@dp.message_handler(commands=['Wednesday'])
 async def send_wednesday_to_chat(bot_to_run, chat_id):
     await bot_to_run.send_message(chat_id, "It's Wednesday, my dudes!")
     await bot_to_run.send_photo(chat_id, Memer().get_random_wednesday())
@@ -119,7 +123,8 @@ async def send_memes(bot_to_run, chat_id, subreddit=''):
 async def send_welcome(message):
     await message.reply(f"""Hello, {message.from_user.first_name}.
 /meme to get insta meme
-/wednesday reminding wednesdays
+/wednesday_now Wednesday today!
+/schedule_wednesday reminding wednesdays
 /memes to get one meme everyday
 /meme_page memes every 2 hours
 /neuro_text <text> generate text with yandex neural networks

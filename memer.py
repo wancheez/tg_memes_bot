@@ -46,7 +46,7 @@ class Memer:
         Returns:
             Изображение с мемом
         """
-        pict_path = os.path.join(WEDNESDAY_MEMES_PATH, Memer.get_random_file(WEDNESDAY_MEMES_PATH))
+        pict_path = os.path.join(WEDNESDAY_MEMES_PATH, Memer().get_random_file(WEDNESDAY_MEMES_PATH))
         img = open(pict_path, 'rb')
         print(f'Got random pict {pict_path}')
         return img
