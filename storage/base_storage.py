@@ -56,7 +56,7 @@ def schedule_meme_page(bot, funcs, chat_id, subreddit):
 
 
 def schedule_wednesday(bot, funcs, chat_id):
-    schedule.every().wednesday.at("10:00").do(funcs['wednesday'], bot, chat_id)
+    schedule.every().wednesday.at("11:00").do(funcs['wednesday'], bot, chat_id)
 
 
 def schedule_memes(bot, funcs, chat_id, subreddit):
