@@ -1,14 +1,17 @@
 import asyncio
 import datetime
-import random
 import logging
-
-from storage.postgres_storage import PGScheduler
-from storage.base_storage import schedule_meme_page, schedule_memes, schedule_wednesday
-from aiogram import Bot, Dispatcher, executor, types, exceptions
-from memer import Memer
-from urllib.error import HTTPError
 import os
+import random
+from aiobalaboba import balaboba
+from urllib.error import HTTPError
+
+from aiogram import Bot, Dispatcher, exceptions, executor, types
+
+from memer import Memer
+from storage.base_storage import (schedule_meme_page, schedule_memes,
+                                  schedule_wednesday)
+from storage.postgres_storage import PGScheduler
 
 TOKEN = os.environ['TG_TOKEN']
 ADMIN_USER_ID = os.getenv('TG_ADMIN')
@@ -77,6 +80,22 @@ async def neuro_text_handler(message):
     memer = Memer()
     msg_text = message.text.replace('/neuro_text ', '')
     response = await memer.generate_text(msg_text)
+    await message.reply(response)
+
+
+@dp.message_handler(commands=['новый_год'])
+async def new_year_handler(message):
+    msg_text = message.text.replace('/новый_год ', '')
+    response = await balaboba(msg_text, intro=20)
+    response = response.replace(msg_text, '')
+    await message.reply(response)
+
+
+@dp.message_handler(commands=['волк'])
+async def new_year_handler(message):
+    msg_text = message.text.replace('/волк ', '')
+    response = await balaboba(msg_text, intro=3)
+    response = response.replace(msg_text, '')
     await message.reply(response)
 
 
