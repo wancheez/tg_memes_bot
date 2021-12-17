@@ -88,6 +88,9 @@ async def new_year_handler(message):
     msg_text = message.text.replace('/новый_год ', '')
     response = await balaboba(msg_text, intro=20)
     response = response.replace(msg_text, '')
+    if not response:
+        await message.reply('Что-то пошло не так. Попробуй еще раз')
+        return
     await message.reply(response)
 
 
@@ -96,6 +99,9 @@ async def new_year_handler(message):
     msg_text = message.text.replace('/волк ', '')
     response = await balaboba(msg_text, intro=3)
     response = response.replace(msg_text, '')
+    if not response:
+        await message.reply('Что-то пошло не так. Попробуй еще раз')
+        return
     await message.reply(response)
 
 
