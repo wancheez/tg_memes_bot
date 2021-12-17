@@ -152,8 +152,10 @@ async def send_welcome(message):
 /schedule_wednesday reminding wednesdays
 /memes to get one meme everyday
 /meme_page memes every 2 hours
-/neuro_text <text> generate text with yandex neural networks
-/булава 🍆""")
+/neuro_text <text> продолжить текст
+/булава 🍆
+/новый_год <имя> <тема> - поздравление на новый год
+/волк <начало цитаты> - цитата волка""")
 
 
 async def inform_admin(text):
