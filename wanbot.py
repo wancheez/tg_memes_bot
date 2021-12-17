@@ -1,14 +1,17 @@
 import asyncio
 import datetime
-import random
 import logging
-
-from storage.postgres_storage import PGScheduler
-from storage.base_storage import schedule_meme_page, schedule_memes, schedule_wednesday
-from aiogram import Bot, Dispatcher, executor, types, exceptions
-from memer import Memer
-from urllib.error import HTTPError
 import os
+import random
+from aiobalaboba import balaboba
+from urllib.error import HTTPError
+
+from aiogram import Bot, Dispatcher, exceptions, executor, types
+
+from memer import Memer
+from storage.base_storage import (schedule_meme_page, schedule_memes,
+                                  schedule_wednesday)
+from storage.postgres_storage import PGScheduler
 
 TOKEN = os.environ['TG_TOKEN']
 ADMIN_USER_ID = os.getenv('TG_ADMIN')
@@ -80,6 +83,28 @@ async def neuro_text_handler(message):
     await message.reply(response)
 
 
+@dp.message_handler(commands=['новый_год'])
+async def new_year_handler(message):
+    msg_text = message.text.replace('/новый_год ', '')
+    response = await balaboba(msg_text, intro=20)
+    response = response.replace(msg_text, '')
+    if not response:
+        await message.reply('Что-то пошло не так. Попробуй еще раз')
+        return
+    await message.reply(response)
+
+
+@dp.message_handler(commands=['волк'])
+async def new_year_handler(message):
+    msg_text = message.text.replace('/волк ', '')
+    response = await balaboba(msg_text, intro=3)
+    response = response.replace(msg_text, '')
+    if not response:
+        await message.reply('Что-то пошло не так. Попробуй еще раз')
+        return
+    await message.reply(response)
+
+
 @dp.message_handler(commands=['булава'])
 async def neuro_text_handler(message):
     response = f'🍆У {message.from_user.first_name} булава {random.randint(1,50)} см 🍆'
@@ -127,8 +152,10 @@ async def send_welcome(message):
 /schedule_wednesday reminding wednesdays
 /memes to get one meme everyday
 /meme_page memes every 2 hours
-/neuro_text <text> generate text with yandex neural networks
-/булава 🍆""")
+/neuro_text <text> продолжить текст
+/булава 🍆
+/новый_год <имя> <тема> - поздравление на новый год
+/волк <начало цитаты> - цитата волка""")
 
 
 async def inform_admin(text):
