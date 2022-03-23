@@ -111,7 +111,7 @@ async def neuro_text_handler(message):
 
 
 async def send_wednesday_to_chat(bot_to_run, chat_id):
-    await bot_to_run.send_message(chat_id, "It's Wednesday, my dudes!")
+    await bot_to_run.send_message(chat_id, "Это среда, мои чуваки!")
     await bot_to_run.send_photo(chat_id, Memer().get_random_wednesday())
 
 
