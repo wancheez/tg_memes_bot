@@ -85,6 +85,8 @@ async def neuro_text_handler(message):
 
 @dp.message_handler(commands=['новый_год'])
 async def new_year_handler(message):
+    await message.reply('Временно не работает')
+    return
     msg_text = message.text.replace('/новый_год ', '')
     response = await balaboba(msg_text, intro=20)
     response = response.replace(msg_text, '')
@@ -96,6 +98,8 @@ async def new_year_handler(message):
 
 @dp.message_handler(commands=['волк'])
 async def wolf_handler(message):
+    await message.reply('Временно не работает')
+    return
     msg_text = message.text.replace('/волк ', '')
     response = await balaboba(msg_text, intro=3)
     if not response:
@@ -153,8 +157,7 @@ async def send_welcome(message):
 /meme_page memes every 2 hours
 /neuro_text <text> продолжить текст
 /булава 🍆
-/новый_год <имя> <тема> - поздравление на новый год
-/волк <начало цитаты> - цитата волка""")
+""")
 
 
 async def inform_admin(text):
