@@ -77,6 +77,8 @@ async def send_meme_handler(message):
 
 @dp.message_handler(commands=['neuro_text'])
 async def neuro_text_handler(message):
+    await message.reply('Временно не работает')
+    return
     memer = Memer()
     msg_text = message.text.replace('/neuro_text ', '')
     response = await memer.generate_text(msg_text)
@@ -109,7 +111,7 @@ async def wolf_handler(message):
 
 
 @dp.message_handler(commands=['булава'])
-async def neuro_text_handler(message):
+async def bulava_handler(message):
     response = f'🍆У {message.from_user.first_name} булава {random.randint(1,50)} см 🍆'
     await message.reply(response)
 
@@ -155,7 +157,6 @@ async def send_welcome(message):
 /schedule_wednesday reminding wednesdays
 /memes to get one meme everyday
 /meme_page memes every 2 hours
-/neuro_text <text> продолжить текст
 /булава 🍆
 """)
 
